@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Oneiromancy — Dream Numbers Oracle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06080f; --bg-grad1:#0a0d1d; --bg-grad2:#120b22;
+  --surface:rgba(13,17,30,.82); --surface2:rgba(10,13,24,.55);
+  --gold:#c9a84c; --gold-b:#e8c97a; --gold-dim:rgba(201,168,76,.4);
+  --gold-10:rgba(201,168,76,.1); --gold-18:rgba(201,168,76,.18); --gold-30:rgba(201,168,76,.3);
+  --text:#e9e4d6; --text2:#9aa5bd; --text3:#5d6a85;
+  --line:rgba(201,168,76,.16); --line2:rgba(201,168,76,.07);
+  --field-bg:rgba(8,11,20,.7); --field-bdr:rgba(201,168,76,.2);
+  --pos:#6ee7a8; --neu:#9aa5bd; --warn:#f0a35e; --err:#f87171;
+  --shadow:0 8px 40px rgba(0,0,0,.55);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Crimson Pro',Georgia,serif; background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  background-image:radial-gradient(ellipse 120% 70% at 50% -10%,var(--bg-grad2),transparent 55%),radial-gradient(ellipse 90% 60% at 85% 100%,var(--bg-grad1),transparent 60%);
+  background-attachment:fixed;
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ── Star field ── */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:var(--gold-b);animation:twinkle var(--tw,4s) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.85}}
+#moon{position:fixed;top:6%;right:8%;width:90px;height:90px;border-radius:50%;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 35% 35%,rgba(232,201,122,.16),rgba(201,168,76,.05) 60%,transparent 75%);
+  box-shadow:0 0 80px 30px rgba(201,168,76,.06)}
+canvas#vortex{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.nebula{position:fixed;border-radius:50%;filter:blur(70px);z-index:0;pointer-events:none;opacity:var(--neb-op,.5)}
+.n1{width:55vw;height:55vw;top:-18vw;left:-14vw;background:radial-gradient(circle,rgba(76,29,149,.32),transparent 65%);animation:drift1 38s ease-in-out infinite alternate}
+.n2{width:48vw;height:48vw;bottom:-16vw;right:-12vw;background:radial-gradient(circle,rgba(30,58,138,.3),transparent 65%);animation:drift2 46s ease-in-out infinite alternate}
+.n3{width:34vw;height:34vw;top:38%;left:58%;background:radial-gradient(circle,rgba(157,23,77,.16),transparent 65%);animation:drift3 52s ease-in-out infinite alternate}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(7vw,5vw) scale(1.15)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1.1)}to{transform:translate(-6vw,-5vw) scale(.95)}}
+@keyframes drift3{from{transform:translate(0,0)}to{transform:translate(-9vw,6vw)}}
+
+/* ── Layout ── */
+#app{position:relative;z-index:2;min-height:100vh}
+.wrap{max-width:680px;margin:0 auto;padding:1.5rem 1.1rem 5rem}
+
+/* ── Theme toggle ── */
+.theme-pill{position:fixed;top:.85rem;right:.85rem;z-index:50;display:flex;gap:2px;background:var(--surface);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:50px;padding:3px}
+.theme-pill button{width:32px;height:28px;border:none;border-radius:50px;background:transparent;color:var(--text3);cursor:pointer;font-size:.8rem;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.theme-pill button.on{background:var(--gold-18);color:var(--gold-b)}
+.theme-pill button:hover{color:var(--gold)}
+
+/* ── Brand ── */
+.brand{text-align:center;margin:2.2rem 0 1.6rem;animation:fadeDown .8s ease both}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.brand .sigil{font-size:1.5rem;color:var(--gold-dim);letter-spacing:.8em;margin-bottom:.6rem;text-indent:.8em}
+.brand h1{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(1.55rem,5.5vw,2.1rem);letter-spacing:.3em;text-indent:.3em;color:var(--gold);background:linear-gradient(110deg,var(--gold) 35%,var(--gold-b) 48%,#fff7e0 50%,var(--gold-b) 52%,var(--gold) 65%);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 7s linear infinite;filter:drop-shadow(0 0 22px var(--gold-30))}
+@keyframes shimmer{0%{background-position:240% 0}100%{background-position:-240% 0}}
+.brand p{color:var(--text2);font-style:italic;margin-top:.5rem;font-size:1.02rem;letter-spacing:.02em}
+.brand .rule{width:140px;height:1px;margin:1rem auto 0;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+
+/* ── Top bar ── */
+.topbar{display:flex;justify-content:center;gap:.6rem;margin-bottom:1.4rem}
+.chip-btn{background:var(--surface2);border:1px solid var(--line);border-radius:50px;color:var(--text2);padding:.42rem 1rem;cursor:pointer;font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;transition:all .25s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip-btn:hover{border-color:var(--gold-dim);color:var(--gold-b)}
+
+/* ── Mode tabs ── */
+.tabs{display:flex;gap:3px;background:var(--surface);border:1px solid var(--line);padding:4px;border-radius:50px;margin-bottom:1.4rem;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.tab{flex:1;padding:.6rem .3rem;border-radius:50px;border:none;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--text2);cursor:pointer;transition:all .3s;white-space:nowrap}
+.tab.active{background:linear-gradient(135deg,var(--gold),#a8853a);color:#0a0a08;font-weight:700;box-shadow:0 2px 16px var(--gold-30)}
+.tab:not(.active):hover{color:var(--gold-b)}
+
+/* ── Cards ── */
+.card{background:var(--surface);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);position:relative}
+.card::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-30),transparent);pointer-events:none}
+.card.glowing{animation:glowPulse 4s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{border-color:var(--line)}50%{border-color:var(--gold-30)}}
+.icard{padding:1.4rem 1.4rem 1.6rem;margin-bottom:1.1rem}
+
+/* ── Form ── */
+.flabel{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;display:block}
+.fhint{font-size:.8rem;color:var(--text3);font-style:italic;margin-top:-.3rem;margin-bottom:.6rem}
+textarea.dream-ta{width:100%;min-height:130px;resize:vertical;background:var(--field-bg);border:1px solid var(--field-bdr);border-radius:12px;padding:.9rem 1rem;color:var(--text);font-family:'Crimson Pro',serif;font-size:1.05rem;line-height:1.65;transition:all .25s;outline:none}
+textarea.dream-ta:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-10)}
+textarea.dream-ta::placeholder{color:var(--text3)}
+.char-ct{text-align:right;font-size:.76rem;color:var(--text3);margin-top:.35rem;font-variant-numeric:tabular-nums}
+.frow{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:.7rem}
+.ff{flex:1;min-width:130px}
+.ff label{font-size:.72rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;font-family:'Cinzel',serif;display:block;margin-bottom:.3rem}
+.ff input,.ff select{width:100%;background:var(--field-bg);border:1px solid var(--field-bdr);border-radius:9px;padding:.6rem .8rem;color:var(--text);font-family:'Crimson Pro',serif;font-size:.95rem;transition:all .25s;outline:none;-webkit-appearance:none;appearance:none;min-height:42px}
+.ff input:focus,.ff select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-10)}
+.ff select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c9a84c'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem}
+.ff select option{background:#0d1322;color:#e9e4d6}
+.ff input::placeholder{color:var(--text3)}
+.ident-strip{border:1px solid var(--line2);border-radius:12px;padding:1rem 1rem .4rem;margin-bottom:1rem;background:var(--surface2)}
+.ident-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.4rem}
+.ident-hdr .t{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.14em;color:var(--text2);text-transform:uppercase}
+.remember{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text3);cursor:pointer;user-select:none}
+.remember input{accent-color:var(--gold);width:13px;height:13px}
+
+/* ── Format selector ── */
+.fmt-row{display:flex;gap:.5rem;margin:.9rem 0 .2rem}
+.fmt-opt{flex:1;text-align:center;padding:.5rem .3rem;border:1px solid var(--field-bdr);border-radius:9px;background:var(--field-bg);color:var(--text2);font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.fmt-opt.on{border-color:var(--gold);color:var(--gold-b);background:var(--gold-10)}
+.fmt-opt:hover{border-color:var(--gold-dim)}
+
+.phone-row{display:flex;gap:.5rem}
+.phone-row .cc{flex:0 0 110px}
+.phone-row .pn{flex:1}
+
+/* ── Buttons ── */
+.btn-p{width:100%;padding:.95rem;margin-top:1.1rem;background:linear-gradient(135deg,var(--gold-b),var(--gold) 45%,#9c7c33);border:none;border-radius:12px;color:#0c0a05;font-family:'Cinzel',serif;font-size:.86rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px var(--gold-18);position:relative;overflow:hidden}
+.btn-p::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.25) 50%,transparent 60%);transform:translateX(-100%);transition:transform .6s}
+.btn-p:hover:not(:disabled)::after{transform:translateX(100%)}
+.btn-p:hover:not(:disabled){box-shadow:0 6px 34px var(--gold-30);transform:translateY(-1px)}
+.btn-p:disabled{opacity:.28;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-g{background:transparent;border:1px solid var(--line);border-radius:9px;padding:.5rem 1.1rem;color:var(--text2);font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.1em;cursor:pointer;transition:all .2s}
+.btn-g:hover{border-color:var(--gold-dim);color:var(--gold-b)}
+
+/* ── Advanced options ── */
+.adv-toggle{display:flex;align-items:center;gap:.6rem;cursor:pointer;padding:.8rem 1.2rem;border:1px solid var(--line2);border-radius:12px;margin-bottom:1.1rem;background:var(--surface2);transition:all .25s;user-select:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.adv-toggle:hover{border-color:var(--line)}
+.adv-toggle .lbl{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.13em;color:var(--text2);text-transform:uppercase}
+.adv-toggle .count{font-family:'Cinzel',serif;font-size:.62rem;color:var(--gold);background:var(--gold-10);border:1px solid var(--gold-18);border-radius:50px;padding:.18rem .65rem;letter-spacing:.05em}
+.adv-toggle .chev{margin-left:auto;color:var(--text3);transition:transform .3s;font-size:.75rem}
+.adv-toggle.open .chev{transform:rotate(180deg)}
+.adv-panel{padding:1.2rem;margin-bottom:1.1rem;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.adv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.adv-top .t{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.12em;color:var(--text2);text-transform:uppercase}
+.reset-btn{background:transparent;border:1px solid var(--line);border-radius:6px;padding:.25rem .7rem;color:var(--text3);font-size:.7rem;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.06em}
+.reset-btn:hover{color:var(--gold-b);border-color:var(--gold-dim)}
+.ogrp{margin-bottom:1.05rem}
+.ogrp:last-child{margin-bottom:0}
+.ogrp-hdr{display:flex;align-items:center;gap:.5rem;font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:.55rem;cursor:pointer;user-select:none}
+.ogrp-hdr:hover{opacity:.75}
+.ogrp-hdr .gcount{margin-left:auto;font-size:.58rem;color:var(--text3);letter-spacing:.04em}
+.pills{display:flex;flex-wrap:wrap;gap:.4rem}
+.pill{padding:.34rem .75rem;border-radius:50px;border:1px solid var(--field-bdr);background:var(--field-bg);color:var(--text3);font-size:.78rem;cursor:pointer;transition:all .2s;user-select:none;line-height:1.3}
+.pill.on{border-color:var(--gold-dim);background:var(--gold-10);color:var(--gold-b)}
+.pill:hover{border-color:var(--gold-dim)}
+
+/* ── Error ── */
+.errmsg{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:.85rem 1rem;color:var(--err);font-size:.92rem;margin-top:1rem;font-style:italic}
+
+/* ── Loading ── */
+.loading{text-align:center;padding:4rem 1.5rem;animation:fadeIn .4s ease}
+.orb{position:relative;width:110px;height:110px;margin:0 auto 2rem}
+.orb .ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid transparent}
+.orb .r1{border-top-color:var(--gold);animation:spin 1.6s linear infinite}
+.orb .r2{inset:12px;border-right-color:var(--gold-dim);animation:spin 2.4s linear infinite reverse}
+.orb .r3{inset:24px;border-bottom-color:var(--gold-b);animation:spin 3.4s linear infinite}
+.orb .core{position:absolute;top:50%;left:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:radial-gradient(circle,var(--gold-b),var(--gold));box-shadow:0 0 24px var(--gold);animation:corePulse 1.8s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes corePulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.35);opacity:1}}
+.loading h3{font-family:'Cinzel',serif;color:var(--gold);letter-spacing:.3em;text-indent:.3em;margin-bottom:.7rem;font-size:1.05rem}
+.loading p{color:var(--text2);font-style:italic;font-size:1rem;min-height:1.6em;transition:opacity .4s}
+
+/* ── Results ── */
+.rwrap{animation:fadeIn .5s ease}
+.rhead{text-align:center;margin-bottom:1.4rem}
+.rhead .rt{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold);letter-spacing:.12em}
+.rhead .grim-badge{display:inline-flex;align-items:center;gap:.35rem;margin-top:.6rem;font-size:.74rem;color:var(--pos);border:1px solid rgba(110,231,168,.3);background:rgba(110,231,168,.07);border-radius:50px;padding:.22rem .8rem;font-family:'Cinzel',serif;letter-spacing:.06em}
+.numbers-stage{display:flex;gap:1.1rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.card-4d{width:210px;min-height:250px;padding:1.6rem 1.2rem;text-align:center;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--gold-30);background:linear-gradient(160deg,var(--gold-10),var(--surface) 55%);border-radius:18px;position:relative;transition:box-shadow .35s;animation:floatY 5s ease-in-out infinite;box-shadow:0 12px 44px rgba(0,0,0,.5)}
+.card-4d:hover{box-shadow:0 16px 60px var(--gold-18),0 0 0 1px var(--gold-dim)}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.card-4d .corner{position:absolute;width:22px;height:22px;border-color:var(--gold-dim);border-style:solid;border-width:0}
+.card-4d .c-tl{top:9px;left:9px;border-top-width:1.5px;border-left-width:1.5px;border-top-left-radius:8px}
+.card-4d .c-tr{top:9px;right:9px;border-top-width:1.5px;border-right-width:1.5px;border-top-right-radius:8px}
+.card-4d .c-bl{bottom:9px;left:9px;border-bottom-width:1.5px;border-left-width:1.5px;border-bottom-left-radius:8px}
+.card-4d .c-br{bottom:9px;right:9px;border-bottom-width:1.5px;border-right-width:1.5px;border-bottom-right-radius:8px}
+.card-4d .lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.22em;color:var(--text2);text-transform:uppercase;margin-bottom:.9rem}
+.card-4d .num{font-family:'Cinzel',serif;font-size:3.1rem;font-weight:800;color:var(--gold-b);letter-spacing:.14em;text-indent:.14em;text-shadow:0 0 34px var(--gold-30);line-height:1;animation:numReveal 1.1s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes numReveal{from{opacity:0;transform:scale(.6);filter:blur(8px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+.card-4d .sub{font-size:.8rem;color:var(--text3);font-style:italic;margin-top:.9rem}
+.toto-card{flex:1;min-width:230px;max-width:330px;padding:1.6rem 1.2rem;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.toto-card .lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.22em;color:var(--text2);text-transform:uppercase;margin-bottom:1.1rem}
+.toto-balls{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.tball{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 32% 28%,var(--gold-b),var(--gold) 55%,#8d6f2c);color:#0c0a05;font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px var(--gold-18),inset 0 1px 2px rgba(255,255,255,.35);transition:all .25s;cursor:default;animation:ballPop .5s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:var(--bd,0s)}
+@keyframes ballPop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+.tball:hover{transform:scale(1.14);box-shadow:0 5px 22px var(--gold-30)}
+.sysrow{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:1.4rem}
+.sysbadge{font-size:.7rem;color:var(--text2);border:1px solid var(--line);border-radius:50px;padding:.22rem .7rem;background:var(--surface2);font-family:'Cinzel',serif;letter-spacing:.04em}
+.quote-blk{text-align:center;padding:1.5rem 2.2rem;margin-bottom:1.2rem;position:relative;font-style:italic;font-size:1.12rem;line-height:1.65;color:var(--text)}
+.quote-blk::before,.quote-blk::after{font-family:'Cinzel',serif;font-size:2.6rem;color:var(--gold-dim);position:absolute;line-height:1}
+.quote-blk::before{content:'\201C';top:.4rem;left:.7rem}
+.quote-blk::after{content:'\201D';bottom:0;right:.7rem}
+.interp{padding:1.5rem 1.6rem;margin-bottom:1.2rem;font-size:1.04rem;line-height:1.75;color:var(--text)}
+.interp::first-letter{font-family:'Cinzel',serif;font-size:3.2rem;float:left;line-height:.85;padding:.08em .12em 0 0;color:var(--gold)}
+.sec-title{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);text-align:center;margin:1.6rem 0 .9rem;display:flex;align-items:center;gap:1rem}
+.sec-title::before,.sec-title::after{content:'';flex:1;height:1px}
+.sec-title::before{background:linear-gradient(90deg,transparent,var(--gold-dim))}
+.sec-title::after{background:linear-gradient(90deg,var(--gold-dim),transparent)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem}
+.dcard{padding:1.05rem 1.1rem;border-radius:13px;border:1px solid var(--line2);background:var(--surface2)}
+.dcard .dh{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.dcard .di{font-size:1.05rem}
+.dcard .dt{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase}
+.dcard p{font-size:.9rem;line-height:1.6;color:var(--text2)}
+.dcard.pos .dt{color:var(--pos)} .dcard.pos{border-color:rgba(110,231,168,.18)}
+.dcard.neu .dt{color:var(--text2)}
+.dcard.warn .dt{color:var(--warn)} .dcard.warn{border-color:rgba(240,163,94,.2)}
+.sym-list{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.4rem}
+.sym{display:flex;gap:.85rem;align-items:flex-start;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--line2);background:var(--surface2)}
+.sym .si{font-size:1.5rem;flex-shrink:0;line-height:1.2}
+.sym .sb{flex:1;min-width:0}
+.sym .sn{font-family:'Cinzel',serif;font-size:.78rem;color:var(--text);letter-spacing:.05em}
+.sym .ss{font-size:.68rem;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:.08em;text-transform:uppercase;margin:.1rem 0 .25rem}
+.sym .sr{font-size:.88rem;color:var(--text2);line-height:1.55}
+.sym .snum{flex-shrink:0;font-family:'Cinzel',serif;font-weight:700;font-size:.95rem;color:var(--gold-b);background:var(--gold-10);border:1px solid var(--gold-18);border-radius:9px;padding:.3rem .65rem;align-self:center}
+.ract{display:flex;gap:.7rem;margin-top:1.5rem}
+.ract .btn-p{margin-top:0;flex:1}
+.ract .btn-share{flex:0 0 auto;padding:.95rem 1.4rem;background:transparent;border:1px solid var(--gold-dim);border-radius:12px;color:var(--gold-b);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;text-transform:uppercase}
+.ract .btn-share:hover{background:var(--gold-10)}
+
+/* ── Grimoire ── */
+.jhdr{display:flex;align-items:center;gap:1rem;margin-bottom:1.4rem}
+.jtitle{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--gold);letter-spacing:.14em;flex:1}
+.jentry{padding:.95rem 1.1rem;margin-bottom:.7rem;transition:all .25s;display:flex;gap:.9rem;align-items:center}
+.jentry:hover{border-color:var(--gold-dim);transform:translateX(3px)}
+.jentry .jb{flex:1;min-width:0;cursor:pointer}
+.jentry-top{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;margin-bottom:.25rem}
+.jentry-mode{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.jentry-date{font-size:.72rem;color:var(--text3);white-space:nowrap}
+.jentry-input{color:var(--text2);font-size:.9rem;font-style:italic;margin-bottom:.45rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jentry-nums{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center}
+.jchip{background:var(--gold-10);border:1px solid var(--gold-18);border-radius:6px;padding:.14rem .5rem;font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold-b)}
+.jmini{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#0c0a05;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif}
+.jfmt{font-size:.6rem;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:.08em;border:1px solid var(--line2);border-radius:4px;padding:.1rem .4rem;text-transform:uppercase}
+.jdel{flex-shrink:0;background:transparent;border:1px solid var(--line2);border-radius:8px;color:var(--text3);width:30px;height:30px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.jdel:hover{border-color:rgba(248,113,113,.4);color:var(--err)}
+.jempty{text-align:center;padding:3rem 1rem;color:var(--text3);font-style:italic;font-size:1rem}
+
+/* ── Footer ── */
+.footer{text-align:center;padding:2.2rem 1rem .6rem;font-size:.72rem;line-height:1.85;color:var(--text3)}
+.footer .tag{margin-top:.7rem;font-family:'Cinzel',serif;letter-spacing:.2em;font-size:.6rem;color:var(--gold-dim);text-transform:uppercase}
+
+/* ── Mobile ── */
+@media (max-width:520px){
+  .wrap{padding:1.1rem .8rem 4rem}
+  .brand{margin-top:2.6rem}
+  .tab{font-size:.55rem;letter-spacing:.06em}
+  .detail-grid{grid-template-columns:1fr}
+  .numbers-stage{flex-direction:column;align-items:center}
+  .card-4d{width:100%;max-width:280px}
+  .toto-card{width:100%;max-width:280px}
+  .ract{flex-direction:column}
+  #moon{width:60px;height:60px}
+}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+
+/* ── Light-mode contrast fixes (purple fills need light text) ── */
+html[data-lt] .tab.active{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);background:linear-gradient(135deg,#6b46c1,#5030a0)}
+html[data-lt] .tball{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3);background:radial-gradient(circle at 32% 28%,#8b6fd4,#5030a0 60%,#3a2275)}
+html[data-lt] .jmini{color:#fff;background:#5030a0}
+html[data-lt] .btn-p{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.22);background:linear-gradient(135deg,#6b46c1,#5030a0 55%,#3f2585)}
+html[data-lt] .card-4d .num{color:#5030a0}
+html[data-lt] .fmt-opt.on{color:#5030a0}
+html[data-lt] .pill.on{color:#5030a0}
+</style>
+</head>
+<body>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+<div id="stars"></div>
+<div id="moon"></div>
+<canvas id="vortex"></canvas>
+<div class="theme-pill" id="themePill"></div>
+<div id="app"></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════
+   ONEIROMANCY — Dream Numbers Oracle
+   Singapore 4D / Toto divination · 20 ancient systems
+═══════════════════════════════════════════════════ */
+
+/* ── STATE ── */
+let themeMode = 'system';
+try { themeMode = localStorage.getItem('oneiro_theme') || 'system'; } catch {}
+let scr  = 'idle';
+let mode = 'dream';
+
+let dreamTxt = '';
+let numKind  = 'phone';
+let ccVal    = '+65';
+let numVal   = '';
+let idVal    = '';
+let fmt      = 'both';
+
+let profile = { name:'', dob:'', tob:'', pob:'Singapore', gender:'' };
+let remember = false;
+try {
+  const saved = JSON.parse(localStorage.getItem('oneiro_profile') || 'null');
+  if (saved) { profile = { ...profile, ...saved }; remember = true; }
+} catch {}
+
+let result   = null;
+let errorMsg = '';
+let advOpen  = false;
+let loadMsg  = '';
+
+let history = [];
+try { history = JSON.parse(localStorage.getItem('oneiro_hist') || '[]'); if(!Array.isArray(history)) history=[]; } catch {}
+
+/* ── ORACLE CATALOG — 20 systems / 4 groups ── */
+const GROUPS = [
+  { id:'cn', icon:'☯', label:'Chinese & East Asian', systems:[
+    { id:'bazi',     label:'BaZi 八字' },
+    { id:'zwds',     label:'Zi Wei Dou Shu 紫微斗數' },
+    { id:'iching',   label:'I Ching 易經' },
+    { id:'wuxing',   label:'Wu Xing 五行' },
+    { id:'loshu',    label:'Lo Shu Grid 洛書' },
+    { id:'kua',      label:'Feng Shui Kua 風水' },
+    { id:'nsk',      label:'Nine Star Ki 九星気学' },
+    { id:'zhougong', label:'Zhou Gong 周公解夢' },
+  ]},
+  { id:'sea', icon:'☸', label:'Southeast Asian & Vedic', systems:[
+    { id:'thai',    label:'Thai Occult · Sak Yant' },
+    { id:'vedic',   label:'Vedic Jyotish' },
+    { id:'tibetan', label:'Tibetan Astrology' },
+    { id:'western', label:'Western Astrology' },
+  ]},
+  { id:'num', icon:'⊕', label:'Numerology', systems:[
+    { id:'chaldean',    label:'Chaldean' },
+    { id:'pythagorean', label:'Pythagorean' },
+    { id:'kabbalah',    label:'Kabbalah Gematria' },
+    { id:'egyptian',    label:'Egyptian Numerology' },
+  ]},
+  { id:'sym', icon:'ᛟ', label:'Symbolic & Archetype', systems:[
+    { id:'futhark', label:'Nordic Elder Futhark' },
+    { id:'ogham',   label:'Celtic Ogham' },
+    { id:'mayan',   label:"Mayan Tzolk'in" },
+    { id:'ifa',     label:'Ifá · Yoruba' },
+  ]},
+];
+const ALL_IDS = GROUPS.flatMap(g => g.systems.map(s => s.id));
+let activeOracles = new Set(ALL_IDS);
+try {
+  const sel = JSON.parse(localStorage.getItem('oneiro_oracles') || 'null');
+  if (Array.isArray(sel) && sel.length) activeOracles = new Set(sel.filter(id => ALL_IDS.includes(id)));
+} catch {}
+function persistOracles(){ try{ localStorage.setItem('oneiro_oracles', JSON.stringify([...activeOracles])); }catch{} }
+function sysLabel(id){ for (const g of GROUPS){ const s = g.systems.find(x => x.id === id); if (s) return s.label; } return id; }
+
+const COUNTRIES = ['Singapore','Malaysia','Thailand','Indonesia','Philippines','Vietnam','China','Hong Kong','Taiwan','Japan','South Korea','India','Myanmar','Cambodia','Laos','Brunei','Australia','New Zealand','United Kingdom','United States','Canada','Other'];
+const CCODES = [['+65','SG'],['+60','MY'],['+66','TH'],['+62','ID'],['+63','PH'],['+84','VN'],['+86','CN'],['+852','HK'],['+886','TW'],['+81','JP'],['+82','KR'],['+91','IN'],['+61','AU'],['+44','UK'],['+1','US']];
+
+/* ── THEME ── */
+const mq = window.matchMedia('(prefers-color-scheme: light)');
+function resolvedTheme(){ return themeMode === 'system' ? (mq.matches ? 'light' : 'dark') : themeMode; }
+function applyTheme(){
+  const t = resolvedTheme();
+  const r = document.documentElement;
+  const v = (k, val) => r.style.setProperty(k, val);
+  if (t === 'light') {
+    r.setAttribute('data-lt', '');
+    v('--bg','#f8f7ff'); v('--bg-grad1','#efeafe'); v('--bg-grad2','#e8e0fb');
+    v('--surface','rgba(255,255,255,.88)'); v('--surface2','rgba(248,247,255,.75)');
+    v('--gold','#5030a0'); v('--gold-b','#6b46c1'); v('--gold-dim','rgba(80,48,160,.45)');
+    v('--gold-10','rgba(80,48,160,.07)'); v('--gold-18','rgba(80,48,160,.14)'); v('--gold-30','rgba(80,48,160,.26)');
+    v('--text','#241b45'); v('--text2','#4b4368'); v('--text3','#8a82a5');
+    v('--line','rgba(80,48,160,.2)'); v('--line2','rgba(80,48,160,.1)');
+    v('--field-bg','rgba(240,238,252,.85)'); v('--field-bdr','rgba(80,48,160,.25)');
+    v('--warn','#c2640e'); v('--pos','#15803d'); v('--err','#dc2626');
+    v('--shadow','0 8px 36px rgba(80,48,160,.1)');
+    v('--neb-op','.22');
+    document.body.style.background = '#f8f7ff';
+  } else {
+    r.removeAttribute('data-lt');
+    ['--bg','--bg-grad1','--bg-grad2','--surface','--surface2','--gold','--gold-b','--gold-dim','--gold-10','--gold-18','--gold-30','--text','--text2','--text3','--line','--line2','--field-bg','--field-bdr','--warn','--pos','--err','--shadow','--neb-op'].forEach(k => r.style.removeProperty(k));
+    document.body.style.background = '';
+  }
+  document.querySelectorAll('input[type=date],input[type=time]').forEach(i => i.style.colorScheme = t);
+  renderThemePill();
+}
+mq.addEventListener('change', () => { if (themeMode === 'system') applyTheme(); });
+function renderThemePill(){
+  const pill = document.getElementById('themePill');
+  pill.innerHTML = '';
+  [['light','☀'],['system','◐'],['dark','☾']].forEach(([m, ic]) => {
+    const b = document.createElement('button');
+    b.textContent = ic;
+    b.title = m + ' theme';
+    b.setAttribute('aria-label', m + ' theme');
+    if (themeMode === m) b.className = 'on';
+    b.onclick = () => { themeMode = m; try{localStorage.setItem('oneiro_theme', m);}catch{} applyTheme(); };
+    pill.appendChild(b);
+  });
+}
+
+/* ── STAR FIELD ── */
+function buildStars(){
+  const host = document.getElementById('stars');
+  host.innerHTML = '';
+  const n = window.innerWidth < 520 ? 45 : 80;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 1.8 + .5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--tw:${(Math.random()*5+2.5).toFixed(1)}s;animation-delay:${(Math.random()*4).toFixed(1)}s`;
+    host.appendChild(s);
+  }
+}
+
+/* ── SPACE WARP CANVAS — spinning hyperspace tunnel ── */
+let raf = null, vortexResize = null;
+function initVortex(){
+  const cv = document.getElementById('vortex');
+  const ctx = cv.getContext('2d');
+  let W, H, t = 0, rot = 0;
+  const fit = () => { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; };
+  if (vortexResize) window.removeEventListener('resize', vortexResize);
+  vortexResize = fit;
+  window.addEventListener('resize', vortexResize);
+  fit();
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Warp streaks — dense tunnel of stars rushing past.
+     The whole field rolls slowly (rot) and each streak spirals
+     as it accelerates, curving like a rotating hyperspace tunnel. */
+  const STREAKS = window.innerWidth < 520 ? 70 : 110;
+  const SPIRAL  = .4;           // gentle twist across a streak's flight
+  const ROLL    = .00045;       // very slow, dreamlike camera roll
+  const streaks = [];
+  function spawn(s){
+    s.a   = Math.random() * Math.PI * 2;   // base angle
+    s.d   = Math.random() * .22 + .015;    // depth from centre (0–1)
+    s.sp  = Math.random() * .0011 + .00045; // slow, drifting outward speed
+    s.w   = Math.random() * 1.2 + .35;     // width
+    s.hue = Math.random();                 // gold ↔ cool blue-white
+    return s;
+  }
+  for (let i = 0; i < STREAKS; i++) {
+    const s = spawn({});
+    s.d = Math.random() * .95;             // scatter initial depth
+    streaks.push(s);
+  }
+
+  /* Occasional comets crossing the sky */
+  const comets = [];
+  function spawnComet(){
+    const fromLeft = Math.random() < .5;
+    comets.push({
+      x: fromLeft ? -60 : W + 60,
+      y: Math.random() * H * .5,
+      vx: (fromLeft ? 1 : -1) * (Math.random() * 1.8 + 2.2),
+      vy: Math.random() * .8 + .4,
+      life: 1,
+    });
+  }
+  let cometTimer = 0;
+
+  /* polar → screen, including tunnel roll + spiral twist at given depth */
+  function pt(s, d){
+    const ease = d * d;
+    const a = s.a + rot + SPIRAL * d;      // angle drifts with depth ⇒ curved spiral path
+    const r = ease * Math.hypot(W, H) * .62;
+    return [ W/2 + r * Math.cos(a), H*.42 + r * Math.sin(a), ease ];
+  }
+
+  function frame(){
+    ctx.clearRect(0, 0, W, H);
+    const cx = W/2, cy = H*.42;
+    const light = resolvedTheme() === 'light';
+    const goldCol = light ? '124,58,237' : '232,201,122';
+    const coolCol = light ? '80,48,160'  : '160,190,255';
+
+    /* glowing core at the vanishing point — slow breath */
+    const coreR = Math.min(W, H) * (.10 + Math.sin(t * .35) * .01);
+    const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+    cg.addColorStop(0,  `rgba(${goldCol},${light ? .09 : .13})`);
+    cg.addColorStop(.45,`rgba(${coolCol},${light ? .03 : .05})`);
+    cg.addColorStop(1,  `rgba(${coolCol},0)`);
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, coreR, 0, Math.PI*2);
+    ctx.fill();
+
+    /* faint sacred-geometry undertone, rolling with the tunnel */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot * .5);
+    ctx.translate(-cx, -cy);
+    [.16, .3].forEach((rf, i) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.min(W,H)*rf + Math.sin(t*.4 + i*1.7)*4, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(${goldCol},${.03 + i*.012})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+    for (let i = 0; i < 6; i++) {
+      const a = i*Math.PI/3;
+      ctx.beginPath();
+      ctx.arc(cx + Math.min(W,H)*.17*Math.cos(a), cy + Math.min(W,H)*.17*Math.sin(a), Math.min(W,H)*.17, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(${goldCol},.018)`;
+      ctx.lineWidth = .8;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* spinning warp streaks — drawn as curved spiral arcs */
+    ctx.lineCap = 'round';
+    for (const s of streaks) {
+      const ease = s.d * s.d;
+      const trail = Math.min(.06 + ease * .18, .22);   // shorter, softer trails
+      const dTail = Math.max(s.d - trail, 0);
+      const [x0, y0]      = pt(s, dTail);
+      const [xm, ym]      = pt(s, (dTail + s.d) / 2);
+      const [x1, y1, e1]  = pt(s, s.d);
+      const alpha = Math.min(e1 * 1.5, light ? .32 : .55);  // dimmer, dreamier
+      const col = s.hue < .55 ? goldCol : coolCol;
+
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, `rgba(${col},0)`);
+      g.addColorStop(1, `rgba(${col},${alpha})`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = s.w * (0.4 + e1 * 1.6);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.quadraticCurveTo(xm, ym, x1, y1);   // curved path = spiralling motion
+      ctx.stroke();
+
+      if (e1 > .1) {
+        ctx.beginPath();
+        ctx.arc(x1, y1, s.w * (0.6 + e1 * .8), 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${col},${Math.min(alpha * 1.25, .95)})`;
+        ctx.fill();
+      }
+
+      s.d += s.sp * (1 + ease * 2.8);          // gentle drift toward viewer
+      if (s.d > 1.05) spawn(s);
+    }
+
+    /* comets */
+    cometTimer -= 1;
+    if (cometTimer <= 0 && comets.length < 1) {
+      spawnComet();
+      cometTimer = 900 + Math.random() * 1100;   // a rare blessing, every ~15–33s
+    }
+    for (let i = comets.length - 1; i >= 0; i--) {
+      const c = comets[i];
+      const tail = 90;
+      const g = ctx.createLinearGradient(c.x - c.vx * tail/5, c.y - c.vy * tail/5, c.x, c.y);
+      g.addColorStop(0, `rgba(${goldCol},0)`);
+      g.addColorStop(1, `rgba(255,247,224,${.75 * c.life})`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(c.x - c.vx * tail/5, c.y - c.vy * tail/5);
+      ctx.lineTo(c.x, c.y);
+      ctx.stroke();
+      c.x += c.vx; c.y += c.vy; c.life -= .0018;
+      if (c.x < -150 || c.x > W + 150 || c.y > H + 150 || c.life <= 0) comets.splice(i, 1);
+    }
+
+    t   += .011;
+    rot += ROLL;                               // the tunnel slowly spins
+    if (rot > Math.PI * 2) rot -= Math.PI * 2;
+    if (!reduced) raf = requestAnimationFrame(frame);
+  }
+  if (raf) cancelAnimationFrame(raf);
+  frame();
+}
+
+/* ── ORACLE SYSTEM PROMPT ── */
+/* Per-system calculation guidance — only the ACTIVE ones are injected. */
+const SYS_METHODS = {
+  bazi:        'BaZi 八字: derive Year/Month/Day/Hour pillars; stem via (year−4) mod 10, branch via (year−4) mod 12. Solar-year boundary Li Chun ≈ Feb 4. Identify the Day Master element and its strength.',
+  zwds:        'Zi Wei Dou Shu 紫微斗數: map the Life Palace (命宮) from birth month and hour; name the dominant主星 (major star) and what it portends.',
+  iching:      'I Ching 易經: derive a hexagram from the numeric/symbolic resonance of the input; name the upper and lower trigrams and the moving line.',
+  wuxing:      'Wu Xing 五行: assess the five-element balance (Wood/Fire/Earth/Metal/Water); note the generating (生) and controlling (克) cycles and which element is deficient or dominant.',
+  loshu:       'Lo Shu Grid 洛書: place the birth-date digits into the magic square rows [4,9,2] [3,5,7] [8,1,6]. Missing numbers = karmic lessons; repeated numbers = strengths.',
+  kua:         "Feng Shui Kua: S = reduce(last 2 digits of birth year). Male 1900s: 10−S; male 2000s: 9−S. Female 1900s: S+5 reduced; female 2000s: S+6 reduced. Kua 5 → male becomes 2, female becomes 8. USE the seeker's stated gender; if no gender is given, skip Kua rather than guessing.",
+  nsk:         'Nine Star Ki 九星気学: sum ALL 4 digits of the birth year, reduce to a single D; star = 11−D (reduce again if >9). Births before Feb 4 use the previous year.',
+  zhougong:    'Zhou Gong Jie Meng 周公解夢: interpret dream imagery through the classical Chinese dream dictionary — this is the primary lens whenever a dream is described.',
+  thai:        'Thai Occult / Sak Yant: read through animal deities, directional spirits and Thai-Brahmin Hora day-ruler logic.',
+  vedic:       'Vedic Jyotish: identify the Moon Nakshatra at birth, its ruling planet (graha) and the operative Dasha period.',
+  tibetan:     'Tibetan Astrology: locate the year in the 60-year element-animal cycle anchored at 1924 = Wood-Mouse; derive the Mewa (birth) number.',
+  western:     'Western Astrology: determine the Sun sign, element and modality, and note any dominant current transit.',
+  chaldean:    'Chaldean (Cheiro) Numerology: 1=A,I,J,Q,Y · 2=B,K,R · 3=C,G,L,S · 4=D,M,T · 5=E,H,N,X · 6=U,V,W · 7=O,Z · 8=F,P. NO letter maps to 9. Report the compound number then the single number.',
+  pythagorean: 'Pythagorean Numerology: Life Path = reduce Month, Day and Year SEPARATELY, then sum and reduce. PRESERVE master numbers 11, 22, 33.',
+  kabbalah:    'Kabbalah / Gematria: convert the name to Hebrew-letter values, give the Gematria total and the Sephirah it maps to on the Tree of Life.',
+  egyptian:    'Egyptian Numerology: apply Kemetic symbol-to-number mappings and name the ruling Neter (deity).',
+  futhark:     'Nordic Elder Futhark: identify the ruling rune of the birth month or the dream theme and its divinatory meaning.',
+  ogham:       'Celtic Ogham: identify the ruling tree/letter for the birth month and what it signifies.',
+  mayan:       "Mayan Tzolk'in: GMT correlation 584283. Kin = (Julian Day − 584283) mod 260. Tone = ((Kin−1) mod 13)+1. Sign = ((Kin−1) mod 20)+1.",
+  ifa:         'Ifá / Yoruba: name the closest Odù pattern that resonates with the reading and its guidance.',
+};
+
+function buildSysPrompt(){
+  const act = [...activeOracles];
+  const labels = act.map(sysLabel).join('; ');
+  const methods = act.map(id => '- ' + (SYS_METHODS[id] || sysLabel(id))).join('\n');
+  const count = act.length;
+
+  return `You are ONEIROMANCY, a master oracle channelling fortune into Singapore 4D and Toto numbers.
+
+╔═ ACTIVE ORACLE SYSTEMS — THIS READING ═╗
+The seeker has chosen EXACTLY these ${count} system${count === 1 ? '' : 's'}, and NO others:
+${labels}
+╚════════════════════════════════════════╝
+
+ABSOLUTE RULE: You may ONLY consult, name, calculate with, or reference the ${count} system${count === 1 ? '' : 's'} listed above. You are FORBIDDEN from mentioning, interpreting through, or deriving numbers from any divination system that is not on that list — even if you know it well. Do NOT mention BaZi, Lo Shu, Kua, or any other system unless it appears in the list above. Every entry in "systems_used" and every symbol's "system" field MUST be one of the listed systems. If a famous system is absent from the list, treat it as if it does not exist for this reading.
+
+CALCULATION METHODS — only for the active systems above:
+${methods}
+
+CONVERGENCE RULE: any digit or number arising independently across multiple active systems is HIGH CONFIDENCE and MUST anchor the output numbers. With only one active system, derive the numbers entirely from that single system's logic.
+
+OUTPUT — return ONLY a valid JSON object, no markdown fences, no prose outside it:
+{
+ "title": "Short poetic reading title",
+ "quote": "One mystical sentence, oracle voice",
+ "interpretation": "Flowing oracle prose, 3-5 sentences, weaving ONLY the active systems together",
+ "systems_used": ["only systems from the active list above — never others"],
+ "lucky_4d": "exactly 4 digits",
+ "lucky_toto": [6 UNIQUE integers between 1 and 49],
+ "details": {
+   "wealth": {"text":"1-2 sentences on wealth and fortune","tone":"pos|neu|warn"},
+   "love":   {"text":"1-2 sentences on love and relationships","tone":"pos|neu|warn"},
+   "career": {"text":"1-2 sentences on career and purpose","tone":"pos|neu|warn"},
+   "caution":{"text":"1-2 sentences of gentle caution","tone":"warn"}
+ },
+ "symbols": [
+   {"icon":"single emoji","name":"Symbol name","system":"MUST be one of the active systems","reason":"Why it surfaced and what it carries","number":"associated digit(s)"}
+ ]
+}
+Include 3-5 symbols, each attributed only to an active system. Stay in the oracle's voice: lyrical, ancient, never clinical. Never break the JSON.`;
+}
+
+function describeIdentity(){
+  const parts = [];
+  if (profile.name)   parts.push('Name: ' + profile.name);
+  if (profile.gender) parts.push('Gender: ' + profile.gender);
+  if (profile.dob)    parts.push('Date of birth: ' + profile.dob);
+  if (profile.tob)    parts.push('Time of birth: ' + profile.tob);
+  if (profile.pob)    parts.push('Place of birth: ' + profile.pob);
+  return parts.length ? '\n\nSeeker identity:\n' + parts.join('\n') : '\n\n(No birth data given — rely on input-derived systems.)';
+}
+
+function buildUserPrompt(){
+  const fmtNote = fmt === '4d' ? 'Seeker wants the 4D number emphasised.' : fmt === 'toto' ? 'Seeker wants the Toto numbers emphasised.' : 'Seeker wants both 4D and Toto numbers.';
+  if (mode === 'dream')
+    return 'The seeker dreamt:\n"' + dreamTxt + '"\n\nInterpret this dream through the active systems (Zhou Gong Jie Meng first if active), surface its symbols, and derive the lucky numbers. ' + fmtNote + describeIdentity();
+  if (mode === 'numbers') {
+    const subject = numKind === 'phone' ? 'Phone number: ' + ccVal + ' ' + numVal : 'ID / NRIC: ' + idVal;
+    return subject + '\n\nAnalyse this number\u2019s vibrational essence through the active numerology and metaphysical systems, then derive the lucky numbers. ' + fmtNote + describeIdentity();
+  }
+  return 'Perform a full cosmic fortune reading for this seeker. Calculate every applicable system from the birth data, address wealth, love, career and caution, and derive the lucky numbers. ' + fmtNote + describeIdentity();
+}
+
+/* ── API ── */
+const LOAD_MSGS = [
+  'Consulting the BaZi pillars\u2026',
+  'Casting the I Ching hexagram\u2026',
+  'Tracing the Lo Shu grid\u2026',
+  'Reading the Tzolk\u2019in count\u2026',
+  'Asking Zhou Gong of your dream\u2026',
+  'Aligning the nine stars\u2026',
+  'Drawing the runes of Futhark\u2026',
+  'The convergence is forming\u2026',
+];
+
+async function doAnalysis(){
+  scr = 'loading';
+  errorMsg = '';
+  let mi = 0;
+  loadMsg = LOAD_MSGS[0];
+  render();
+  const ticker = setInterval(() => {
+    mi = (mi + 1) % LOAD_MSGS.length;
+    const el = document.getElementById('ldmsg');
+    if (el) { el.style.opacity = 0; setTimeout(() => { el.textContent = LOAD_MSGS[mi]; el.style.opacity = 1; }, 250); }
+  }, 2400);
+
+  try {
+    const resp = await fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: buildSysPrompt(),
+        messages: [{ role: 'user', content: buildUserPrompt() }]
+      })
+    });
+    clearInterval(ticker);
+
+    if (!resp.ok) {
+      throw new Error(
+        resp.status === 429 ? 'The oracle is receiving many seekers. Pause a moment, then ask again.' :
+        (resp.status === 401 || resp.status === 403) ? 'The oracle chamber cannot be reached. Refresh the page and try once more.' :
+        resp.status >= 500 ? 'The oracle chamber is temporarily closed. Return shortly.' :
+        'The connection to the oracle faltered. Please try again.'
+      );
+    }
+
+    const data  = await resp.json();
+    const raw   = (data.content || []).find(b => b.type === 'text')?.text || '{}';
+    const clean = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+
+    let parsed;
+    try { parsed = JSON.parse(clean); }
+    catch {
+      let fx = clean;
+      if ((fx.match(/"/g) || []).length % 2 !== 0) fx += '"';
+      let ob = 0, oa = 0;
+      for (const ch of fx) { if (ch === '{') ob++; else if (ch === '}') ob--; else if (ch === '[') oa++; else if (ch === ']') oa--; }
+      while (oa-- > 0) fx += ']';
+      while (ob-- > 0) fx += '}';
+      try { parsed = JSON.parse(fx); }
+      catch {
+        const m = clean.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error('The oracle\u2019s message was unclear. Please ask again.');
+        try { parsed = JSON.parse(m[0]); } catch { throw new Error('The oracle\u2019s message was unclear. Please ask again.'); }
+      }
+    }
+
+    // sanitise 4D — exactly 4 digits
+    parsed.lucky_4d = String(parsed.lucky_4d ?? '').replace(/\D/g, '').padStart(4, '8').slice(-4);
+    // sanitise toto — 6 unique ints 1–49
+    if (!Array.isArray(parsed.lucky_toto)) parsed.lucky_toto = [];
+    const seen = new Set(); const toto = [];
+    for (const n of parsed.lucky_toto) {
+      const v = Math.min(49, Math.max(1, parseInt(n, 10) || 0));
+      if (v >= 1 && !seen.has(v)) { seen.add(v); toto.push(v); }
+      if (toto.length === 6) break;
+    }
+    let f = 8; // fill from auspicious 8 if oracle under-delivers
+    while (toto.length < 6) {
+      while (seen.has(f)) { f++; if (f > 49) f = 1; }
+      seen.add(f); toto.push(f);
+    }
+    parsed.lucky_toto = toto;
+    if (!Array.isArray(parsed.systems_used)) parsed.systems_used = [];
+    if (!Array.isArray(parsed.symbols)) parsed.symbols = [];
+    if (typeof parsed.details !== 'object' || !parsed.details) parsed.details = {};
+
+    // ── Enforce oracle selection on the OUTPUT side (safety net) ──
+    // Match returned system names against the active labels (loose, case-insensitive,
+    // ignoring CJK suffixes and punctuation) and drop anything not selected.
+    const activeLabels = [...activeOracles].map(sysLabel);
+    const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    const activeNorm = activeLabels.map(norm);
+    const isActive = name => {
+      const n = norm(name);
+      if (!n) return false;
+      return activeNorm.some(a => a && (a.includes(n) || n.includes(a) || a.split(' ')[0] === n.split(' ')[0]));
+    };
+    const filteredSys = parsed.systems_used.filter(isActive);
+    parsed.systems_used = filteredSys.length ? filteredSys : activeLabels.slice(0, Math.min(4, activeLabels.length));
+    parsed.symbols = parsed.symbols.filter(s => !s.system || isActive(s.system));
+
+    const inputLabel = mode === 'dream' ? dreamTxt
+      : mode === 'numbers' ? (numKind === 'phone' ? ccVal + ' ' + numVal : idVal)
+      : (profile.name || profile.dob);
+    result = { ...parsed, mode, fmt, input: inputLabel, ts: Date.now() };
+
+    history.unshift(result);
+    if (history.length > 50) history.length = 50;
+    try { localStorage.setItem('oneiro_hist', JSON.stringify(history)); } catch {}
+
+    if (remember) { try { localStorage.setItem('oneiro_profile', JSON.stringify(profile)); } catch {} }
+    else { try { localStorage.removeItem('oneiro_profile'); } catch {} }
+
+    scr = 'result';
+  } catch (err) {
+    clearInterval(ticker);
+    errorMsg = err.message || 'Something unforeseen crossed the reading. Please try again.';
+    scr = 'idle';
+  }
+  render();
+}
+
+/* ── DOM HELPERS ── */
+function mk(tag, cls, txt){
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  if (txt !== undefined) el.textContent = txt;
+  return el;
+}
+function mkBtn(cls, txt, fn){
+  const b = mk('button', cls, txt);
+  if (fn) b.onclick = fn;
+  return b;
+}
+function footer(){
+  const f = mk('div', 'footer');
+  f.append(
+    mk('div', null, 'Readings are spiritual guidance drawn from documented traditional systems.'),
+    mk('div', null, 'For entertainment purposes only — no lottery outcome is guaranteed.'),
+    mk('div', null, 'Play responsibly. National Council on Problem Gambling helpline: 1800-6-668-668.'),
+    mk('div', 'tag', '✦ Twenty oracles · one convergence ✦')
+  );
+  return f;
+}
+
+/* ── RENDER ROOT ── */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  if (scr === 'loading') return renderLoading(app);
+  if (scr === 'result' && result) return renderResult(app);
+  if (scr === 'grimoire') return renderGrimoire(app);
+  renderIdle(app);
+}
+
+/* ── IDLE ── */
+function renderIdle(app){
+  const wrap = mk('div', 'wrap');
+
+  const brand = mk('div', 'brand');
+  brand.append(
+    mk('div', 'sigil', '✦ ☽ ✦'),
+    mk('h1', null, 'ONEIROMANCY'),
+    mk('p', null, 'Twenty ancient oracles. One destiny in numbers.'),
+    mk('div', 'rule')
+  );
+  wrap.appendChild(brand);
+
+  const top = mk('div', 'topbar');
+  top.appendChild(mkBtn('chip-btn', '✦ Grimoire · ' + history.length, () => { scr = 'grimoire'; render(); }));
+  wrap.appendChild(top);
+
+  const tabs = mk('div', 'tabs');
+  [['dream','☽ Dream'],['numbers','⊕ Numbers'],['fortune','✧ Fortune']].forEach(([id, lbl]) => {
+    tabs.appendChild(mkBtn('tab' + (mode === id ? ' active' : ''), lbl, () => { mode = id; errorMsg = ''; render(); }));
+  });
+  wrap.appendChild(tabs);
+
+  const card = mk('div', 'card icard glowing');
+  if (mode === 'dream')   buildDream(card);
+  if (mode === 'numbers') buildNumbers(card);
+  if (mode === 'fortune') buildFortune(card);
+  if (errorMsg) card.appendChild(mk('div', 'errmsg', errorMsg));
+  wrap.appendChild(card);
+
+  const advT = mk('div', 'adv-toggle' + (advOpen ? ' open' : ''));
+  advT.append(
+    mk('span', 'lbl', '⚙ Oracle Systems'),
+    mk('span', 'count', activeOracles.size + ' of ' + ALL_IDS.length),
+    mk('span', 'chev', '▾')
+  );
+  advT.onclick = () => { advOpen = !advOpen; render(); };
+  wrap.appendChild(advT);
+  if (advOpen) wrap.appendChild(buildAdvPanel());
+
+  wrap.appendChild(footer());
+  app.appendChild(wrap);
+}
+
+/* identity strip — shared */
+function buildIdentity(card, dobRequired, onDobChange){
+  const strip = mk('div', 'ident-strip');
+  const hdr = mk('div', 'ident-hdr');
+  hdr.appendChild(mk('span', 't', dobRequired ? 'Birth Details (required)' : 'Birth Details (optional — deepens the reading)'));
+  const rem = mk('label', 'remember');
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = remember;
+  cb.onchange = e => { remember = e.target.checked; };
+  rem.append(cb, document.createTextNode(' Remember me'));
+  hdr.appendChild(rem);
+  strip.appendChild(hdr);
+
+  const r1 = mk('div', 'frow');
+  const fName = mk('div', 'ff');
+  fName.appendChild(mk('label', null, 'Name'));
+  const inName = document.createElement('input');
+  inName.type = 'text'; inName.placeholder = 'Your name'; inName.value = profile.name;
+  inName.oninput = e => { profile.name = e.target.value; };
+  fName.appendChild(inName);
+
+  const fGen = mk('div', 'ff');
+  fGen.appendChild(mk('label', null, 'Gender'));
+  const selGen = document.createElement('select');
+  [['',' — '],['male','Male'],['female','Female']].forEach(([v, l]) => {
+    const o = document.createElement('option'); o.value = v; o.textContent = l; selGen.appendChild(o);
+  });
+  selGen.value = profile.gender || '';
+  selGen.onchange = e => { profile.gender = e.target.value; };
+  fGen.appendChild(selGen);
+  r1.append(fName, fGen);
+
+  const r2 = mk('div', 'frow');
+  const fDob = mk('div', 'ff');
+  fDob.appendChild(mk('label', null, 'Date of Birth'));
+  const inDob = document.createElement('input');
+  inDob.type = 'date'; inDob.value = profile.dob;
+  inDob.oninput = e => { profile.dob = e.target.value; if (onDobChange) onDobChange(); };
+  fDob.appendChild(inDob);
+
+  const fTob = mk('div', 'ff');
+  fTob.appendChild(mk('label', null, 'Time of Birth'));
+  const inTob = document.createElement('input');
+  inTob.type = 'time'; inTob.value = profile.tob;
+  inTob.oninput = e => { profile.tob = e.target.value; };
+  fTob.appendChild(inTob);
+  r2.append(fDob, fTob);
+
+  const r3 = mk('div', 'frow');
+  const fPob = mk('div', 'ff');
+  fPob.appendChild(mk('label', null, 'Place of Birth'));
+  const selPob = document.createElement('select');
+  COUNTRIES.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; selPob.appendChild(o); });
+  selPob.value = profile.pob || 'Singapore';
+  selPob.onchange = e => { profile.pob = e.target.value; };
+  fPob.appendChild(selPob);
+  r3.appendChild(fPob);
+
+  strip.append(r1, r2, r3);
+  card.appendChild(strip);
+}
+
+/* format selector */
+function buildFmt(card){
+  const row = mk('div', 'fmt-row');
+  [['both','✦ Both'],['4d','4D Only'],['toto','Toto Only']].forEach(([id, lbl]) => {
+    const o = mk('div', 'fmt-opt' + (fmt === id ? ' on' : ''), lbl);
+    o.onclick = () => {
+      fmt = id;
+      row.querySelectorAll('.fmt-opt').forEach(el => el.classList.remove('on'));
+      o.classList.add('on');
+    };
+    row.appendChild(o);
+  });
+  card.appendChild(row);
+}
+
+/* ── DREAM MODE ── */
+function buildDream(card){
+  card.appendChild(mk('label', 'flabel', '☽ Describe Your Dream'));
+  card.appendChild(mk('div', 'fhint', 'The more vivid the detail, the clearer the oracle sees.'));
+
+  const sub = mkBtn('btn-p', 'Divinate ✦', null);
+  sub.disabled = dreamTxt.trim().length < 5;
+
+  const ta = document.createElement('textarea');
+  ta.className = 'dream-ta';
+  ta.placeholder = 'Last night I walked a forest of jade trees, and a white tiger crossed my path bearing a key of bone\u2026';
+  ta.maxLength = 500;
+  ta.value = dreamTxt;
+  const ct = mk('div', 'char-ct', dreamTxt.length + '/500');
+  ta.oninput = e => {
+    dreamTxt = e.target.value;
+    ct.textContent = dreamTxt.length + '/500';
+    sub.disabled = dreamTxt.trim().length < 5;
+  };
+  card.append(ta, ct);
+
+  buildIdentity(card, false);
+  buildFmt(card);
+
+  sub.onclick = () => { dreamTxt = ta.value.trim(); if (dreamTxt.length >= 5) doAnalysis(); };
+  card.appendChild(sub);
+}
+
+/* ── NUMBERS MODE ── */
+function buildNumbers(card){
+  card.appendChild(mk('label', 'flabel', '⊕ Read Your Number'));
+  card.appendChild(mk('div', 'fhint', 'Every number you carry hums with its own fate.'));
+
+  const sub = mkBtn('btn-p', 'Reveal the Numbers ✦', null);
+  const valid = () => numKind === 'phone' ? numVal.replace(/\D/g, '').length >= 6 : idVal.trim().length >= 4;
+  sub.disabled = !valid();
+
+  const kindRow = mk('div', 'fmt-row');
+  kindRow.style.margin = '0 0 .8rem';
+  const mkKind = (id, lbl) => {
+    const o = mk('div', 'fmt-opt' + (numKind === id ? ' on' : ''), lbl);
+    o.onclick = () => { numKind = id; render(); };
+    return o;
+  };
+  kindRow.append(mkKind('phone', '📱 Phone Number'), mkKind('id', '🪪 ID / NRIC'));
+  card.appendChild(kindRow);
+
+  if (numKind === 'phone') {
+    const row = mk('div', 'phone-row');
+    const ccF = mk('div', 'ff cc');
+    const ccSel = document.createElement('select');
+    CCODES.forEach(([code, name]) => {
+      const o = document.createElement('option');
+      o.value = code; o.textContent = code + ' ' + name;
+      ccSel.appendChild(o);
+    });
+    ccSel.value = ccVal;
+    ccSel.onchange = e => { ccVal = e.target.value; };
+    ccF.appendChild(ccSel);
+
+    const pnF = mk('div', 'ff pn');
+    const pn = document.createElement('input');
+    pn.type = 'tel'; pn.placeholder = '9123 4567'; pn.value = numVal; pn.maxLength = 16;
+    pn.oninput = e => { numVal = e.target.value; sub.disabled = !valid(); };
+    pnF.appendChild(pn);
+    row.append(ccF, pnF);
+    card.appendChild(row);
+  } else {
+    const f = mk('div', 'ff');
+    const idIn = document.createElement('input');
+    idIn.type = 'text'; idIn.placeholder = 'e.g. S8612345A'; idIn.value = idVal; idIn.maxLength = 20;
+    idIn.oninput = e => { idVal = e.target.value; sub.disabled = !valid(); };
+    f.appendChild(idIn);
+    card.appendChild(f);
+  }
+
+  buildIdentity(card, false);
+  buildFmt(card);
+
+  sub.onclick = () => { if (valid()) doAnalysis(); };
+  card.appendChild(sub);
+}
+
+/* ── FORTUNE MODE ── */
+function buildFortune(card){
+  card.appendChild(mk('label', 'flabel', '✧ Cosmic Fortune Reading'));
+  card.appendChild(mk('div', 'fhint', 'A full reading of wealth, love, career and destiny from your birth chart.'));
+
+  const sub = mkBtn('btn-p', 'Read My Fortune ✦', null);
+  sub.disabled = !profile.dob;
+
+  buildIdentity(card, true, () => { sub.disabled = !profile.dob; });
+  buildFmt(card);
+
+  sub.onclick = () => { if (profile.dob) doAnalysis(); };
+  card.appendChild(sub);
+}
+
+/* ── ADVANCED PANEL ── */
+function buildAdvPanel(){
+  const panel = mk('div', 'card adv-panel');
+  const top = mk('div', 'adv-top');
+  top.appendChild(mk('span', 't', 'Choose which oracles speak'));
+  top.appendChild(mkBtn('reset-btn', 'Reset to All', () => {
+    activeOracles = new Set(ALL_IDS); persistOracles(); render();
+  }));
+  panel.appendChild(top);
+
+  GROUPS.forEach(grp => {
+    const grpEl = mk('div', 'ogrp');
+    const onCount = grp.systems.filter(s => activeOracles.has(s.id)).length;
+    const allOn = onCount === grp.systems.length;
+
+    const hdr = mk('div', 'ogrp-hdr');
+    hdr.appendChild(mk('span', null, grp.icon + ' ' + grp.label));
+    hdr.appendChild(mk('span', 'gcount', onCount + '/' + grp.systems.length));
+    hdr.onclick = () => {
+      if (allOn) grp.systems.forEach(s => activeOracles.delete(s.id));
+      else grp.systems.forEach(s => activeOracles.add(s.id));
+      if (activeOracles.size === 0) activeOracles.add(grp.systems[0].id); // never empty
+      persistOracles(); render();
+    };
+    grpEl.appendChild(hdr);
+
+    const pills = mk('div', 'pills');
+    grp.systems.forEach(sys => {
+      const p = mk('div', 'pill' + (activeOracles.has(sys.id) ? ' on' : ''), sys.label);
+      p.onclick = () => {
+        if (activeOracles.has(sys.id)) {
+          if (activeOracles.size <= 1) return; // keep at least one oracle
+          activeOracles.delete(sys.id);
+        } else activeOracles.add(sys.id);
+        persistOracles(); render();
+      };
+      pills.appendChild(p);
+    });
+    grpEl.appendChild(pills);
+    panel.appendChild(grpEl);
+  });
+  return panel;
+}
+
+/* ── LOADING ── */
+function renderLoading(app){
+  const wrap = mk('div', 'wrap');
+  const card = mk('div', 'card loading');
+  const orb = mk('div', 'orb');
+  orb.append(mk('div', 'ring r1'), mk('div', 'ring r2'), mk('div', 'ring r3'), mk('div', 'core'));
+  const h = mk('h3', null, 'THE ORACLE STIRS');
+  const p = mk('p', null, loadMsg);
+  p.id = 'ldmsg';
+  card.append(orb, h, p);
+  wrap.appendChild(card);
+  app.appendChild(wrap);
+}
+
+/* ── RESULT ── */
+function renderResult(app){
+  const wrap = mk('div', 'wrap rwrap');
+  const r = result;
+
+  const head = mk('div', 'rhead');
+  head.appendChild(mk('div', 'rt', r.title || 'The Oracle Speaks'));
+  const gb = mk('div', 'grim-badge');
+  gb.append(mk('span', null, '✓'), mk('span', null, 'Inscribed in your Grimoire'));
+  head.appendChild(gb);
+  wrap.appendChild(head);
+
+  const stage = mk('div', 'numbers-stage');
+  if (r.fmt !== 'toto') {
+    const c4 = mk('div', 'card-4d');
+    ['c-tl','c-tr','c-bl','c-br'].forEach(c => c4.appendChild(mk('div', 'corner ' + c)));
+    c4.append(
+      mk('div', 'lbl', '4D Lucky Number'),
+      mk('div', 'num', r.lucky_4d),
+      mk('div', 'sub', 'where the oracles converge')
+    );
+    stage.appendChild(c4);
+  }
+  if (r.fmt !== '4d') {
+    const ct = mk('div', 'card toto-card');
+    ct.appendChild(mk('div', 'lbl', 'Toto Numbers'));
+    const balls = mk('div', 'toto-balls');
+    (r.lucky_toto || []).forEach((n, i) => {
+      const b = mk('div', 'tball', String(n));
+      b.style.setProperty('--bd', (0.15 + i * 0.12).toFixed(2) + 's');
+      balls.appendChild(b);
+    });
+    ct.appendChild(balls);
+    stage.appendChild(ct);
+  }
+  wrap.appendChild(stage);
+
+  if (r.systems_used && r.systems_used.length) {
+    const sr = mk('div', 'sysrow');
+    r.systems_used.forEach(s => sr.appendChild(mk('span', 'sysbadge', String(s))));
+    wrap.appendChild(sr);
+  }
+
+  if (r.quote) wrap.appendChild(mk('div', 'card quote-blk', r.quote));
+  if (r.interpretation) wrap.appendChild(mk('div', 'card interp', r.interpretation));
+
+  const d = r.details || {};
+  const dKeys = [['wealth','💰','Wealth & Fortune'],['love','❤','Love & Relationships'],['career','⚒','Career & Purpose'],['caution','⚠','Caution']];
+  if (dKeys.some(([k]) => d[k] && d[k].text)) {
+    wrap.appendChild(mk('div', 'sec-title', 'The Four Houses'));
+    const grid = mk('div', 'detail-grid');
+    dKeys.forEach(([k, ic, lbl]) => {
+      if (!d[k] || !d[k].text) return;
+      const tone = ['pos','neu','warn'].includes(d[k].tone) ? d[k].tone : 'neu';
+      const dc = mk('div', 'dcard ' + tone);
+      const dh = mk('div', 'dh');
+      dh.append(mk('span', 'di', ic), mk('span', 'dt', lbl));
+      dc.append(dh, mk('p', null, d[k].text));
+      grid.appendChild(dc);
+    });
+    wrap.appendChild(grid);
+  }
+
+  if (r.symbols && r.symbols.length) {
+    wrap.appendChild(mk('div', 'sec-title', 'Symbols Revealed'));
+    const list = mk('div', 'sym-list');
+    r.symbols.forEach(s => {
+      const el = mk('div', 'sym');
+      el.appendChild(mk('div', 'si', s.icon || '✦'));
+      const body = mk('div', 'sb');
+      body.append(
+        mk('div', 'sn', s.name || ''),
+        mk('div', 'ss', s.system || ''),
+        mk('div', 'sr', s.reason || '')
+      );
+      el.appendChild(body);
+      if (s.number !== undefined && s.number !== null && String(s.number) !== '') {
+        el.appendChild(mk('div', 'snum', String(s.number)));
+      }
+      list.appendChild(el);
+    });
+    wrap.appendChild(list);
+  }
+
+  const act = mk('div', 'ract');
+  act.appendChild(mkBtn('btn-p', '✦ New Reading', () => { scr = 'idle'; result = null; dreamTxt = ''; render(); }));
+  const share = mkBtn('btn-share', '⌲ Share', null);
+  share.onclick = async () => {
+    const txt = '🔮 ' + (r.title || 'Oneiromancy reading') + '\n' +
+      (r.fmt !== 'toto' ? '4D: ' + r.lucky_4d + '\n' : '') +
+      (r.fmt !== '4d' ? 'Toto: ' + (r.lucky_toto || []).join(' · ') + '\n' : '') +
+      (r.quote ? '\u201C' + r.quote + '\u201D' : '');
+    try {
+      if (navigator.share) await navigator.share({ title: 'Oneiromancy', text: txt });
+      else {
+        await navigator.clipboard.writeText(txt);
+        share.textContent = '✓ Copied';
+        setTimeout(() => { share.textContent = '⌲ Share'; }, 1800);
+      }
+    } catch {}
+  };
+  act.appendChild(share);
+  wrap.appendChild(act);
+
+  const back = mk('div', 'topbar');
+  back.style.marginTop = '1rem';
+  back.appendChild(mkBtn('chip-btn', '✦ Grimoire · ' + history.length, () => { scr = 'grimoire'; render(); }));
+  wrap.appendChild(back);
+
+  wrap.appendChild(footer());
+  app.appendChild(wrap);
+}
+
+/* ── GRIMOIRE ── */
+function renderGrimoire(app){
+  const wrap = mk('div', 'wrap rwrap');
+
+  const hdr = mk('div', 'jhdr');
+  hdr.appendChild(mkBtn('btn-g', '← Back', () => { scr = 'idle'; render(); }));
+  hdr.appendChild(mk('h2', 'jtitle', '☾ Dream Grimoire'));
+  wrap.appendChild(hdr);
+
+  if (!history.length) {
+    wrap.appendChild(mk('div', 'jempty', 'Your grimoire awaits its first inscription. Complete a reading to begin your record.'));
+  } else {
+    history.forEach((entry, idx) => {
+      const el = mk('div', 'card jentry');
+
+      const body = mk('div', 'jb');
+      const top = mk('div', 'jentry-top');
+      const modeLbl = entry.mode === 'dream' ? '☽ Dream' : entry.mode === 'numbers' ? '⊕ Numbers' : '✧ Fortune';
+      top.append(
+        mk('span', 'jentry-mode', modeLbl),
+        mk('span', 'jentry-date', entry.ts ? new Date(entry.ts).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '')
+      );
+      body.appendChild(top);
+      body.appendChild(mk('div', 'jentry-input', entry.input || '—'));
+
+      const nums = mk('div', 'jentry-nums');
+      if (entry.fmt !== 'toto' && entry.lucky_4d) nums.appendChild(mk('span', 'jchip', '4D ' + entry.lucky_4d));
+      if (entry.fmt !== '4d' && Array.isArray(entry.lucky_toto)) {
+        entry.lucky_toto.forEach(n => nums.appendChild(mk('span', 'jmini', String(n))));
+      }
+      nums.appendChild(mk('span', 'jfmt', entry.fmt === 'both' ? 'Both' : entry.fmt === '4d' ? '4D' : 'Toto'));
+      body.appendChild(nums);
+
+      body.onclick = () => { result = entry; scr = 'result'; render(); };
+      el.appendChild(body);
+
+      const del = mkBtn('jdel', '✕', null);
+      del.setAttribute('aria-label', 'Delete entry');
+      del.onclick = e => {
+        e.stopPropagation();
+        history.splice(idx, 1);
+        try { localStorage.setItem('oneiro_hist', JSON.stringify(history)); } catch {}
+        render();
+      };
+      el.appendChild(del);
+      wrap.appendChild(el);
+    });
+  }
+
+  wrap.appendChild(footer());
+  app.appendChild(wrap);
+}
+
+/* ── BOOT ── */
+applyTheme();
+buildStars();
+initVortex();
+render();
+</script>
+</body>
+</html>
