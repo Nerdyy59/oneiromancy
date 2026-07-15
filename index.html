@@ -122,12 +122,19 @@ textarea.dream-ta::placeholder{color:var(--text3)}
 .btn-g:hover{border-color:var(--gold-dim);color:var(--gold-b)}
 
 /* ── Advanced options ── */
-.adv-toggle{display:flex;align-items:center;gap:.6rem;cursor:pointer;padding:.8rem 1.2rem;border:1px solid var(--line2);border-radius:12px;margin-bottom:1.1rem;background:var(--surface2);transition:all .25s;user-select:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.adv-toggle:hover{border-color:var(--line)}
-.adv-toggle .lbl{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.13em;color:var(--text2);text-transform:uppercase}
-.adv-toggle .count{font-family:'Cinzel',serif;font-size:.62rem;color:var(--gold);background:var(--gold-10);border:1px solid var(--gold-18);border-radius:50px;padding:.18rem .65rem;letter-spacing:.05em}
-.adv-toggle .chev{margin-left:auto;color:var(--text3);transition:transform .3s;font-size:.75rem}
+.adv-toggle{display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:1rem 1.2rem;border:1px solid var(--gold-30);border-radius:14px;margin-bottom:1.1rem;background:linear-gradient(135deg,var(--gold-10),var(--surface2));transition:all .25s;user-select:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 18px var(--gold-10);position:relative;overflow:hidden}
+.adv-toggle::before{content:'';position:absolute;top:0;left:-8%;right:-8%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+.adv-toggle:not(.open){animation:advBreathe 3.2s ease-in-out infinite}
+@keyframes advBreathe{0%,100%{box-shadow:0 2px 18px var(--gold-10);border-color:var(--gold-30)}50%{box-shadow:0 2px 26px var(--gold-18);border-color:var(--gold-dim)}}
+.adv-toggle:hover{border-color:var(--gold);box-shadow:0 4px 30px var(--gold-18);transform:translateY(-1px)}
+.adv-toggle .adv-ico{font-size:1.15rem;line-height:1;filter:drop-shadow(0 0 6px var(--gold-30))}
+.adv-toggle .adv-txt{display:flex;flex-direction:column;gap:.15rem;min-width:0;margin-right:auto}
+.adv-toggle .lbl{font-family:'Cinzel',serif;font-size:.76rem;letter-spacing:.13em;color:var(--gold-b);text-transform:uppercase}
+.adv-toggle .sublbl{font-size:.82rem;color:var(--text2);font-style:italic;line-height:1.2}
+.adv-toggle .count{font-family:'Cinzel',serif;font-size:.64rem;color:var(--gold-b);background:var(--gold-10);border:1px solid var(--gold-30);border-radius:50px;padding:.22rem .7rem;letter-spacing:.05em;white-space:nowrap}
+.adv-toggle .chev{color:var(--gold);transition:transform .3s;font-size:.8rem}
 .adv-toggle.open .chev{transform:rotate(180deg)}
+.adv-toggle.open{animation:none}
 .adv-panel{padding:1.2rem;margin-bottom:1.1rem;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .adv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
@@ -324,7 +331,7 @@ const GROUPS = [
     { id:'zhougong', label:'Zhou Gong 周公解夢' },
   ]},
   { id:'sea', icon:'☸', label:'Southeast Asian & Vedic', systems:[
-    { id:'thai',      label:'Thai Occult · Sak Yant' },
+    { id:'thai',      label:'Horasat โหราศาสตร์' },
     { id:'mahataksa', label:'Mahataksa มหาทักษา' },
     { id:'mahabote',  label:'Mahabote มหาโภไคย' },
     { id:'vedic',     label:'Vedic Jyotish' },
@@ -582,20 +589,20 @@ const SYS_METHODS = {
   wuxing:      'Wu Xing 五行: assess the five-element balance (Wood/Fire/Earth/Metal/Water); note the generating (生) and controlling (克) cycles and which element is deficient or dominant.',
   loshu:       'Lo Shu Grid 洛書: place the birth-date digits into the magic square rows [4,9,2] [3,5,7] [8,1,6]. Missing numbers = karmic lessons; repeated numbers = strengths.',
   kua:         "Feng Shui Kua: S = reduce(last 2 digits of birth year). Male 1900s: 10−S; male 2000s: 9−S. Female 1900s: S+5 reduced; female 2000s: S+6 reduced. Kua 5 → male becomes 2, female becomes 8. USE the seeker's stated gender; if no gender is given, skip Kua rather than guessing.",
-  nsk:         'Nine Star Ki 九星気学: sum ALL 4 digits of the birth year, reduce to a single D; star = 11−D (reduce again if >9). Births before Feb 4 use the previous year.',
+  nsk:         'Nine Star Ki 九星気学: sum ALL digits of the birth year and reduce to a single digit D. For 1900s births, star = 11−D; for 2000s births, star = 10−D. If the result exceeds 9, reduce again; the star is 1-9. Births before Feb 4 use the previous year.',
   zhougong:    'Zhou Gong Jie Meng 周公解夢: interpret dream imagery through the classical Chinese dream dictionary — this is the primary lens whenever a dream is described.',
-  thai:        'Thai Occult / Sak Yant: read through animal deities, directional spirits and Thai-Brahmin Hora day-ruler logic.',
+  thai:        "Horasat โหราศาสตร์ (traditional Thai astrology, Suriyayart สุริยยาตร์ canon): work in Thai planetary numerals — Sun(1) Moon(2) Mars(3) Mercury(4) Jupiter(5) Venus(6) Saturn(7) Rahu(8) Ketu(9) Uranus(0) — across the 12 rasi in order: Aries(1) Taurus(2) Gemini(3) Cancer(4) Leo(5) Virgo(6) Libra(7) Scorpio(8) Sagittarius(9) Capricorn(10) Aquarius(11) Pisces(12). Establish the Lakna ลัคนา (ascendant: the rasi rising on the eastern horizon at the birth time), which represents the native and anchors the 12 bhava/houses counted from it. Note the Kaset เกษตร (domicile lords): Mars rules Aries+Scorpio, Venus rules Taurus+Libra, Mercury rules Gemini+Virgo, Moon rules Cancer, Sun rules Leo, Jupiter rules Sagittarius+Pisces, Saturn rules Capricorn+Aquarius. Judge the strength of the Lakna lord and which grahas cast favourable or hostile aspects onto the Lakna and the Moon; derive lucky numbers from the strongest benefic grahas and the Lakna/house numbers. Requires birth time for a true Lakna; if time is missing, work from the Sun-sign lakna and the Moon.",
   mahataksa:   "Mahataksa มหาทักษา (Thai Taksa): the 8 planets in day-order — Sun(1) Mon(2) Mars(3) Mercury(4) Jupiter(5) Venus(6) Saturn(7) Rahu(8, Wed night) — are assigned to the 8 bhumi positions IN FIXED ORDER starting from the birth-day planet: Bariwan บริวาร (retinue/allies), Ayu อายุ (health/longevity), Det เดช (power/fame), Sri ศรี (wealth/prosperity/success), Mula มูละ (assets/property/inheritance), Utsaha อุตสาหะ (work/effort/career), Montri มนตรี (patrons/mentors/support), Kalakini กาลกิณี (misfortune — INAUSPICIOUS). The number tied to the Sri and Det positions are the most auspicious lucky numbers; the number in the Kalakini position is the UNLUCKY number and must be avoided or de-emphasised in the output. Count bhumi forward from the birth weekday planet.",
   mahabote:    "Mahabote มหาโภไคย (Burmese, needs only birth year + weekday): take the birth year, subtract 639 if born on/before ~Apr 15, else subtract 638; divide by 7 and take the REMAINDER. Remainder → House-1 planet: 1=Sun, 2=Moon, 3=Mars, 4=Mercury, 5=Jupiter, 6=Venus, 0 or 7=Saturn. Fill the 7 fixed houses (1 Impermanence, 2 Extremity, 3 Fame, 4 Wealth, 5 Goals, 6 Sickly, 7 Leader) by counting planets in steps of 3. Mark the birthday-weekday planet (Wed after noon = Rahu, not Mercury). Houses 3/4/5/7 are auspicious, houses 1/2/6 are liabilities; derive lucky numbers from the planets in the auspicious houses and the remainder value itself.",
-  vedic:       'Vedic Jyotish: identify the Moon Nakshatra at birth, its ruling planet (graha) and the operative Dasha period.',
-  tibetan:     'Tibetan Astrology: locate the year in the 60-year element-animal cycle anchored at 1924 = Wood-Mouse; derive the Mewa (birth) number.',
-  western:     'Western Astrology: determine the Sun sign, element and modality, and note any dominant current transit.',
+  vedic:       'Vedic Jyotish: from the sidereal Moon position identify the birth Nakshatra (one of 27 lunar mansions, each 13°20′) and its pada; name its ruling planet (graha) and the operative Vimshottari Dasha lord. Note the Rashi (Moon sign) and Lagna if birth time is given. Derive numbers from the Nakshatra index (1-27) and its planetary ruler.',
+  tibetan:     'Tibetan Astrology: place the birth year in the 60-year cycle of 5 elements × 12 animals, anchored 1924 = Wood-Mouse (Rabjung cycle). Derive the birth element-animal, the Mewa (birth number, the rotating 1-9 magic-square number), and the Parkha (trigram). Numbers come from the Mewa and the animal index (1-12).',
+  western:     'Western Astrology: from the birth date determine the tropical Sun sign; if time is given, the Ascendant and Moon sign. Note the sign element (Fire/Earth/Air/Water), modality (Cardinal/Fixed/Mutable) and ruling planet, plus any major current transit. Derive numbers from the zodiac index (1-12) and the ruling planet.',
   chaldean:    'Chaldean (Cheiro) Numerology: 1=A,I,J,Q,Y · 2=B,K,R · 3=C,G,L,S · 4=D,M,T · 5=E,H,N,X · 6=U,V,W · 7=O,Z · 8=F,P. NO letter maps to 9. Report the compound number then the single number.',
   pythagorean: 'Pythagorean Numerology: Life Path = reduce Month, Day and Year SEPARATELY, then sum and reduce. PRESERVE master numbers 11, 22, 33.',
   kabbalah:    'Kabbalah / Gematria: convert the name to Hebrew-letter values, give the Gematria total and the Sephirah it maps to on the Tree of Life.',
-  egyptian:    'Egyptian Numerology: apply Kemetic symbol-to-number mappings and name the ruling Neter (deity).',
-  futhark:     'Nordic Elder Futhark: identify the ruling rune of the birth month or the dream theme and its divinatory meaning.',
-  ogham:       'Celtic Ogham: identify the ruling tree/letter for the birth month and what it signifies.',
+  egyptian:    'Egyptian (Kemetic) Numerology: reduce the name and birth date to a root number 1-9 and map it to its ruling Neter (deity) — e.g. 1=Ra, 2=Isis, 3=Osiris, 4=Geb, 5=Thoth, 6=Hathor, 7=Anubis, 8=Sekhmet, 9=Horus — reading the deity\'s domain into the fortune.',
+  futhark:     'Nordic Elder Futhark: the 24 runes split into 3 ættir of 8. Select the ruling rune from the birth month or dominant dream theme (e.g. Fehu=wealth, Uruz=strength, Ansuz=insight, Frigg\'s Gebo=gifts); read its divinatory meaning and take its position (1-24) as a number source.',
+  ogham:       'Celtic Ogham: the tree calendar assigns each period a sacred tree/letter (Beith/Birch, Luis/Rowan, Nuin/Ash, Duir/Oak, Coll/Hazel, etc.). Identify the ruling tree for the birth month, read its lore, and use its ogham order (1-20) as a number source.',
   mayan:       "Mayan Tzolk'in: GMT correlation 584283. Kin = (Julian Day − 584283) mod 260. Tone = ((Kin−1) mod 13)+1. Sign = ((Kin−1) mod 20)+1.",
   ifa:         'Ifá / Yoruba: name the closest Odù pattern that resonates with the reading and its guidance.',
 };
@@ -847,9 +854,15 @@ function renderIdle(app){
   wrap.appendChild(card);
 
   const advT = mk('div', 'adv-toggle' + (advOpen ? ' open' : ''));
+  const advTxt = mk('div', 'adv-txt');
+  advTxt.append(
+    mk('span', 'lbl', 'Oracle Systems'),
+    mk('span', 'sublbl', advOpen ? 'Tap a system to toggle it on or off' : 'Tap to choose which oracles read for you')
+  );
   advT.append(
-    mk('span', 'lbl', '⚙ Oracle Systems'),
-    mk('span', 'count', activeOracles.size + ' of ' + ALL_IDS.length),
+    mk('span', 'adv-ico', '⚙'),
+    advTxt,
+    mk('span', 'count', activeOracles.size + ' / ' + ALL_IDS.length),
     mk('span', 'chev', '▾')
   );
   advT.onclick = () => { advOpen = !advOpen; render(); };
