@@ -280,7 +280,7 @@ html[data-lt] .pill.on{color:#5030a0}
 'use strict';
 /* ═══════════════════════════════════════════════════
    ONEIROMANCY — Dream Numbers Oracle
-   Singapore 4D / Toto divination · 20 ancient systems
+   Singapore 4D / Toto divination · 22 ancient systems
 ═══════════════════════════════════════════════════ */
 
 /* ── STATE ── */
@@ -324,10 +324,12 @@ const GROUPS = [
     { id:'zhougong', label:'Zhou Gong 周公解夢' },
   ]},
   { id:'sea', icon:'☸', label:'Southeast Asian & Vedic', systems:[
-    { id:'thai',    label:'Thai Occult · Sak Yant' },
-    { id:'vedic',   label:'Vedic Jyotish' },
-    { id:'tibetan', label:'Tibetan Astrology' },
-    { id:'western', label:'Western Astrology' },
+    { id:'thai',      label:'Thai Occult · Sak Yant' },
+    { id:'mahataksa', label:'Mahataksa มหาทักษา' },
+    { id:'mahabote',  label:'Mahabote มหาโภไคย' },
+    { id:'vedic',     label:'Vedic Jyotish' },
+    { id:'tibetan',   label:'Tibetan Astrology' },
+    { id:'western',   label:'Western Astrology' },
   ]},
   { id:'num', icon:'⊕', label:'Numerology', systems:[
     { id:'chaldean',    label:'Chaldean' },
@@ -583,6 +585,8 @@ const SYS_METHODS = {
   nsk:         'Nine Star Ki 九星気学: sum ALL 4 digits of the birth year, reduce to a single D; star = 11−D (reduce again if >9). Births before Feb 4 use the previous year.',
   zhougong:    'Zhou Gong Jie Meng 周公解夢: interpret dream imagery through the classical Chinese dream dictionary — this is the primary lens whenever a dream is described.',
   thai:        'Thai Occult / Sak Yant: read through animal deities, directional spirits and Thai-Brahmin Hora day-ruler logic.',
+  mahataksa:   "Mahataksa มหาทักษา (Thai Taksa): the 8 planets in day-order — Sun(1) Mon(2) Mars(3) Mercury(4) Jupiter(5) Venus(6) Saturn(7) Rahu(8, Wed night) — are assigned to the 8 bhumi positions IN FIXED ORDER starting from the birth-day planet: Bariwan บริวาร (retinue/allies), Ayu อายุ (health/longevity), Det เดช (power/fame), Sri ศรี (wealth/prosperity/success), Mula มูละ (assets/property/inheritance), Utsaha อุตสาหะ (work/effort/career), Montri มนตรี (patrons/mentors/support), Kalakini กาลกิณี (misfortune — INAUSPICIOUS). The number tied to the Sri and Det positions are the most auspicious lucky numbers; the number in the Kalakini position is the UNLUCKY number and must be avoided or de-emphasised in the output. Count bhumi forward from the birth weekday planet.",
+  mahabote:    "Mahabote มหาโภไคย (Burmese, needs only birth year + weekday): take the birth year, subtract 639 if born on/before ~Apr 15, else subtract 638; divide by 7 and take the REMAINDER. Remainder → House-1 planet: 1=Sun, 2=Moon, 3=Mars, 4=Mercury, 5=Jupiter, 6=Venus, 0 or 7=Saturn. Fill the 7 fixed houses (1 Impermanence, 2 Extremity, 3 Fame, 4 Wealth, 5 Goals, 6 Sickly, 7 Leader) by counting planets in steps of 3. Mark the birthday-weekday planet (Wed after noon = Rahu, not Mercury). Houses 3/4/5/7 are auspicious, houses 1/2/6 are liabilities; derive lucky numbers from the planets in the auspicious houses and the remainder value itself.",
   vedic:       'Vedic Jyotish: identify the Moon Nakshatra at birth, its ruling planet (graha) and the operative Dasha period.',
   tibetan:     'Tibetan Astrology: locate the year in the 60-year element-animal cycle anchored at 1924 = Wood-Mouse; derive the Mewa (birth) number.',
   western:     'Western Astrology: determine the Sun sign, element and modality, and note any dominant current transit.',
@@ -797,7 +801,7 @@ function footer(){
     mk('div', null, 'Readings are spiritual guidance drawn from documented traditional systems.'),
     mk('div', null, 'For entertainment purposes only — no lottery outcome is guaranteed.'),
     mk('div', null, 'Play responsibly. National Council on Problem Gambling helpline: 1800-6-668-668.'),
-    mk('div', 'tag', '✦ Twenty oracles · one convergence ✦')
+    mk('div', 'tag', '✦ Twenty-two oracles · one convergence ✦')
   );
   return f;
 }
@@ -820,7 +824,7 @@ function renderIdle(app){
   brand.append(
     mk('div', 'sigil', '✦ ☽ ✦'),
     mk('h1', null, 'ONEIROMANCY'),
-    mk('p', null, 'Twenty ancient oracles. One destiny in numbers.'),
+    mk('p', null, 'Twenty-two ancient oracles. One destiny in numbers.'),
     mk('div', 'rule')
   );
   wrap.appendChild(brand);
